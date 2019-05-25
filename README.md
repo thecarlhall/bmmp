@@ -35,7 +35,7 @@ Search uses extended regular expressions as provided by `grep -E`.
 
 * sed
 * grep
-* pkill
+* killall
 * jot (mac) or shuf (linux)
 * curl
 * mpg123

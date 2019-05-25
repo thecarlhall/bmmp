@@ -49,27 +49,29 @@ play() {
     while true; do
         choose_next
 
-        line=$(echo "$list" | head -n $pick | sed -n 1p)
-        (curl -ks "$line" | mpg123 - ) & last_pid=$!
+        line=$(echo "$list" | sed -n ${pick}p)
+        (curl -ks "$line" | mpg123 - ) &
 
-        echo '(n for next, l for list, q to quit)'
         while true; do
-            read -n 1 action
-            if [[ $action == "" ]]; then
-                echo '(n for next, l for list, q to quit)'
+            read -n 1 -t 1 action
+
+            if [[ $action == "?" ]]; then
+                print_usage
 
             elif [[ $action == 'l' ]]; then
                 print_list
 
             elif [[ $action == 'n' ]]; then
-                #echo "\nkilling $last_pid"
-                pkill -TERM -P $last_pid
+                (killall mpg123; true)
+                break
+
+            elif [[ -z "$(pgrep mpg123)" ]]; then
                 break
 
             elif [[ $action == 'q' ]]; then
-                #echo "\nkilling $last_pid"
-                pkill -TERM -P $last_pid
+                (killall mpg123; true)
                 exit 0
+
             fi
         done
     done
@@ -80,6 +82,15 @@ print_list() {
     deprefixed=$(echo "$list" | sed "s,^$server/,,g")
     decoded=$(urldecode "$deprefixed")
     echo "$decoded" | less
+}
+
+print_usage() {
+    echo
+    echo 'n - next track'
+    echo 'l - print the playlist'
+    echo 'q - quit'
+    echo '? - show usage'
+    echo
 }
 
 ## search the playlist
