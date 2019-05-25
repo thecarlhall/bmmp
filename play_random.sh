@@ -74,7 +74,11 @@ print_list() {
 ## search the playlist
 search() {
     echo Searching...
-    list=$(grep -Ei "${search}" "$outfile")
+    if [[ -z "$search" ]]; then
+        list=$(tail -n +2 "$outfile")
+    else
+        list=$(grep -Ei "${search}" "$outfile")
+    fi
     if [[ $1 == 'print' ]]; then
         print_list
     fi
@@ -83,12 +87,12 @@ search() {
 ################################################################################
 ##  main
 ################################################################################
-if [[ ! -z $search ]]; then
+if [[ ! -z "$search" ]]; then
     search 'print'
-elif [[ ! -z $play ]]; then
+elif [[ ! -z "$play" ]]; then
     search=$play
     play_random_by_search
-elif [[ ! -z $1 ]]; then
+else
     search=$1
     play_random_by_search
 fi

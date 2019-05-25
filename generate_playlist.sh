@@ -19,9 +19,7 @@ find $location -type f -iname '*.mp3' | \
 		-e 's/)/%29/g' \
 	>> "$outfile"
 
-line_count=$(cat "$outfile" | wc -l)
-## don't count the header
-line_count=$(($line_count - 1))
+line_count=$(tail -n +2 "$outfile" | wc -l)
 
 echo Wrote $line_count entries to $outfile
 
