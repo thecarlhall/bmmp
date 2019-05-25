@@ -22,6 +22,21 @@ done
 ## https://stackoverflow.com/a/37840948/201197
 urldecode() { : "${*//+/ }"; echo -e "${_//%/\\x}"; }
 
+## choose the next line to play
+choose_next() {
+    if [[ ! -z "$random" ]]; then
+        if hash jot;  then
+            pick=$(jot -r 1 $first $last)
+        elif hash shuf; then
+            pick=$(shuf -n 1 -i $first-$last)
+        else
+            pick=$(($pick + 1))
+        fi
+    else
+        pick=$(($pick + 1))
+    fi
+}
+
 ## play random songs based on a search
 play() {
     echo Playing...
@@ -32,19 +47,9 @@ play() {
     last=$list_len
     pick=0
     while true; do
-        if [[ ! -z "$random" ]]; then
-            if hash jot;  then
-                pick=$(jot -r 1 $first $last)
-            elif hash shuf; then
-                pick=$(shuf -n 1 -i $first-$last)
-            else
-                pick=$(($pick + 1))
-            fi
-        else
-            pick=$(($pick + 1))
-        fi
+        choose_next
 
-        line=$(echo "$list" | head -n $pick | tail -n 1)
+        line=$(echo "$list" | head -n $pick | sed -n 1p)
         (curl -ks "$line" | mpg123 - ) & last_pid=$!
 
         echo '(n for next, l for list, q to quit)'
@@ -81,7 +86,8 @@ print_list() {
 search() {
     echo Searching...
     if [[ -z "$search" ]]; then
-        list=$(tail -n +2 "$outfile")
+        ## use the whole list but skip the header
+        list=$(sed 1d "$outfile")
     else
         list=$(grep -Ei "${search}" "$outfile")
     fi
