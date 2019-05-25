@@ -6,10 +6,11 @@ source ./.bmmp.env
 ################################################################################
 ##  options
 ################################################################################
-while getopts s:p: option
+while getopts r:s:p: option
 do
     case "${option}"
         in
+        r) random=${OPTARG};;
         s) search=${OPTARG};;
         p) play=${OPTARG};;
     esac
@@ -22,20 +23,25 @@ done
 urldecode() { : "${*//+/ }"; echo -e "${_//%/\\x}"; }
 
 ## play random songs based on a search
-play_random_by_search() {
+play() {
     echo Playing...
     search
     list_len=$(echo -n "$list" | wc -l)
 
-    first=2
+    first=1
     last=$list_len
+    pick=0
     while true; do
-        if hash jot;  then
-            pick=$(jot -r 1 $first $last)
-        elif hash shuf; then
-            pick=$(shuf -n 1 -i $first-$last)
+        if [[ ! -z "$random" ]]; then
+            if hash jot;  then
+                pick=$(jot -r 1 $first $last)
+            elif hash shuf; then
+                pick=$(shuf -n 1 -i $first-$last)
+            else
+                pick=$(($pick + 1))
+            fi
         else
-            pick=$first
+            pick=$(($pick + 1))
         fi
 
         line=$(echo "$list" | head -n $pick | tail -n 1)
@@ -68,7 +74,7 @@ play_random_by_search() {
 print_list() {
     deprefixed=$(echo "$list" | sed "s,^$server/,,g")
     decoded=$(urldecode "$deprefixed")
-    echo "$decoded" | sort | less
+    echo "$decoded" | less
 }
 
 ## search the playlist
@@ -79,6 +85,7 @@ search() {
     else
         list=$(grep -Ei "${search}" "$outfile")
     fi
+    list=$(echo -n "$list" | sort)
     if [[ $1 == 'print' ]]; then
         print_list
     fi
@@ -91,9 +98,12 @@ if [[ ! -z "$search" ]]; then
     search 'print'
 elif [[ ! -z "$play" ]]; then
     search=$play
-    play_random_by_search
+    play
+elif [[ ! -z "$random" ]]; then
+    search=$random
+    play
 else
     search=$1
-    play_random_by_search
+    play
 fi
 
