@@ -54,6 +54,7 @@ play() {
     while true; do
         choose_next
 
+        echo '--------------------------------------------------------------------------------'
         line=$(echo "$list" | sed -n ${pick}p)
         curl -ks "$line" | mpg123 - & last_pid=$!
 
