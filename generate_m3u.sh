@@ -17,6 +17,8 @@ find $location -type f -iname '*.mp3' | \
 		-e "s/'/%27/g" \
 		-e 's/(/%28/g' \
 		-e 's/)/%29/g' \
+        -e 's/\[/%5B/g' \
+        -e 's/\]/%5D/g' \
 	>> "$outfile"
 
 line_count=$(wc -l < "$outfile")

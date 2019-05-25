@@ -37,9 +37,14 @@ choose_next() {
     fi
 }
 
+kill_it() {
+    if ps -p $last_pid > /dev/null; then
+        kill $last_pid
+    fi
+}
+
 ## play random songs based on a search
 play() {
-    echo Playing...
     search
     list_len=$(echo -n "$list" | wc -l)
 
@@ -50,10 +55,10 @@ play() {
         choose_next
 
         line=$(echo "$list" | sed -n ${pick}p)
-        (curl -ks "$line" | mpg123 - ) &
+        curl -ks "$line" | mpg123 - & last_pid=$!
 
         while true; do
-            read -n 1 -t 1 action
+            read -n 1 -t 1 action || true
 
             if [[ $action == "?" ]]; then
                 print_usage
@@ -62,14 +67,14 @@ play() {
                 print_list
 
             elif [[ $action == 'n' ]]; then
-                (killall mpg123; true)
+                kill_it
                 break
 
             elif [[ -z "$(pgrep mpg123)" ]]; then
                 break
 
             elif [[ $action == 'q' ]]; then
-                (killall mpg123; true)
+                kill_it
                 exit 0
 
             fi
@@ -95,7 +100,6 @@ print_usage() {
 
 ## search the playlist
 search() {
-    echo Searching...
     if [[ -z "$search" ]]; then
         ## use the whole list but skip the header
         list=$(sed 1d "$outfile")
