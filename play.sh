@@ -4,19 +4,6 @@ set -e
 source ./.bmmp.env
 
 ################################################################################
-##  options
-################################################################################
-while getopts r:s:p: option
-do
-    case "${option}"
-        in
-        r) random=${OPTARG};;
-        s) search=${OPTARG};;
-        p) play=${OPTARG};;
-    esac
-done
-
-################################################################################
 ##  functions
 ################################################################################
 ## https://stackoverflow.com/a/37840948/201197
@@ -24,17 +11,23 @@ urldecode() { : "${*//+/ }"; echo -e "${_//%/\\x}"; }
 
 ## choose the next line to play
 choose_next() {
-    if [[ ! -z "$random" ]]; then
+    first=1
+    list_len=$(echo -n "$list" | wc -l)
+    if [ "$random" = true ]; then
         if hash jot;  then
-            pick=$(jot -r 1 $first $last)
+            pick=$(jot -r 1 $first $list_len)
         elif hash shuf; then
-            pick=$(shuf -n 1 -i $first-$last)
+            pick=$(shuf -n 1 -i $first-$list_len)
         else
             pick=$(($pick + 1))
         fi
     else
-        pick=$(($pick + 1))
+        let pick=$pick+1
+        if [[ $pick -gt $list_len ]]; then
+            pick=$first
+        fi
     fi
+    echo picking $pick
 }
 
 kill_it() {
@@ -46,35 +39,47 @@ kill_it() {
 ## play random songs based on a search
 play() {
     search
-    list_len=$(echo -n "$list" | wc -l)
 
-    first=1
-    last=$list_len
     pick=0
+    #tmpfile=$(mktemp)
     while true; do
         choose_next
 
         echo '--------------------------------------------------------------------------------'
         line=$(echo "$list" | sed -n ${pick}p)
-        curl -ks "$line" | mpg123 - & last_pid=$!
+
+        ## attempt to make it possible to pause mpg123
+        #echo writing to $tmpfile
+        #curl -kso "$tmpfile" "$line"
+        #(mpg123 "$tmpfile" || true; rm -rf "$tmpfile") & last_pid=$!
+
+        curl -ks "$line" | mpg123 -C - & last_pid=$!
 
         while true; do
-            read -n 1 -t 1 action || true
+            read -n 1 -t 1 cmd || true
 
-            if [[ $action == "?" ]]; then
+            if [[ $cmd == "?" ]]; then
                 print_usage
 
-            elif [[ $action == 'l' ]]; then
+            elif [[ $cmd == 'l' ]]; then
                 print_list
 
-            elif [[ $action == 'n' ]]; then
+            elif [[ $cmd == 'r' ]]; then
+                if [ "$random" = true ]; then
+                    random=false
+                else
+                    random=true
+                fi
+                echo -e "\nSet random to $random"
+
+            elif [[ $cmd == 'n' ]]; then
                 kill_it
                 break
 
             elif [[ -z "$(pgrep mpg123)" ]]; then
                 break
 
-            elif [[ $action == 'q' ]]; then
+            elif [[ $cmd == 'q' ]]; then
                 kill_it
                 exit 0
 
@@ -94,6 +99,7 @@ print_usage() {
     echo
     echo 'n - next track'
     echo 'l - print the playlist'
+    echo 'r - toggle random play'
     echo 'q - quit'
     echo '? - show usage'
     echo
@@ -101,11 +107,11 @@ print_usage() {
 
 ## search the playlist
 search() {
-    if [[ -z "$search" ]]; then
+    if [[ -z "$pattern" ]]; then
         ## use the whole list but skip the header
         list=$(sed 1d "$outfile")
     else
-        list=$(grep -Ei "${search}" "$outfile")
+        list=$(grep -Ei "${pattern}" "$outfile")
     fi
     list=$(echo -n "$list" | sort)
     if [[ $1 == 'print' ]]; then
@@ -116,16 +122,24 @@ search() {
 ################################################################################
 ##  main
 ################################################################################
-if [[ ! -z "$search" ]]; then
-    search 'print'
-elif [[ ! -z "$play" ]]; then
-    search=$play
-    play
-elif [[ ! -z "$random" ]]; then
-    search=$random
-    play
-else
-    search=$1
-    play
-fi
+while getopts :r:s: option; do
+    case "${option}" in
+        r)
+            echo playing random
+            random=true
+            pattern=$OPTARG
+            play
+        ;;
+        s)
+            echo searching
+            pattern=$OPTARG
+            search 'print'
+        ;;
+        *)
+            echo defaulting
+            pattern=$OPTARG
+            play
+        ;;
+    esac
+done
 
