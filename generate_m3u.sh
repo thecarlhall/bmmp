@@ -3,9 +3,6 @@ set -e
 
 source ./.bmmp.env
 
-# start a file with the m3u header
-echo '#EXTM3U' > "$outfile"
-
 # add a line for each mp3 and replace some url characters
 find $location -type f -iname '*.mp3' | \
 	sed -e "s,^$location,$server,g" \
@@ -19,7 +16,7 @@ find $location -type f -iname '*.mp3' | \
 		-e 's/)/%29/g' \
         -e 's/\[/%5B/g' \
         -e 's/\]/%5D/g' \
-	>> "$outfile"
+	> "$outfile"
 
 line_count=$(wc -l < "$outfile")
 ## don't count the header
