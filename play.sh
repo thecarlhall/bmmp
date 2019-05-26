@@ -12,32 +12,30 @@ urldecode() { : "${*//+/ }"; echo -e "${_//%/\\x}"; }
 ## choose the next line to play
 choose_next() {
     first=1
-    list_len=$(echo -n "$list" | wc -l)
 
-    if [ "$random" = true ]; then
+    if [[ ! -z "$user_pick" ]]; then
+        pick=$user_pick
+        unset user_pick
+
+        if [[ $pick -lt $first ]]; then
+            pick=$first
+        elif [[ $pick -gt $list_len ]]; then
+            pick=$list_len
+        fi
+        echo ** playing user pick $pick
+
+    elif [ "$random" = true ]; then
+        ## pick a random track from the list
         if hash jot;  then
             pick=$(jot -r 1 $first $list_len)
         elif hash shuf; then
             pick=$(shuf -n 1 -i $first-$list_len)
         fi
-    else
-        if [[ ! -z "$user_pick" ]]; then
-            pick=$user_pick
-            unset user_pick
 
-            if [[ $user_pick -lt $first ]]; then
-                pick=$first
-            elif [[ $user_pick -gt $list_len ]]; then
-                pick=$list_len
-            fi
-        else
-            let pick=$pick+1
-            if [[ $pick -gt $list_len ]]; then
-                pick=$first
-            fi
-        fi
+    else
+        ## advance to the next track or wrap back to the beginning
+        pick=$((pick % list_len + 1))
     fi
-    echo picking $pick
 }
 
 kill_it() {
@@ -46,7 +44,7 @@ kill_it() {
     fi
 }
 
-## play random songs based on a search
+## play songs based on a search
 play() {
     search
 
@@ -64,10 +62,13 @@ play() {
             read -s -n 1 -t 1 cmd || true
 
             case $cmd in
-                [0-9])  # pick an entry from the playlist
-                    user_pick=$cmd
-                    kill_it
-                    break
+                [1-9])  # pick an entry from the playlist
+                    read -p "Choose track [playing $pick of $list_len]: " -e -i "$cmd" user_pick
+
+                    if [[ ! -z "$user_pick" ]]; then
+                        kill_it
+                        break
+                    fi
                     ;;
 
                 l)  # list contents of playlist
@@ -79,7 +80,22 @@ play() {
                     break
                     ;;
 
-                p)  # start/stop playing
+                q)  # quit
+                    kill_it
+                    echo '** bye!'
+                    exit 0
+                    ;;
+
+                r)  # toggle random
+                    if [ "$random" = true ]; then
+                        random=false
+                    else
+                        random=true
+                    fi
+                    echo -e "** set random to $random"
+                    ;;
+
+                s)  # start/stop playing
                     if [[ "$state" == 'playing' ]]; then
                         kill_it
                         state=stopped
@@ -89,23 +105,8 @@ play() {
                     fi
                     ;;
 
-                r)  # toggle random
-                    if [ "$random" = true ]; then
-                        random=false
-                    else
-                        random=true
-                    fi
-                    echo -e "Set random to $random"
-                    ;;
-
-                q)  # quit
-                    kill_it
-                    echo 'Bye!'
-                    exit 0
-                    ;;
-
                 \?) # usage
-                    print_usage
+                    usage
                     ;;
             esac
 
@@ -123,16 +124,6 @@ print_list() {
     echo "$decoded" | less -N
 }
 
-print_usage() {
-    echo
-    echo 'n - next track'
-    echo 'l - print the playlist'
-    echo 'r - toggle random play'
-    echo 'q - quit'
-    echo '? - show usage'
-    echo
-}
-
 ## search the playlist
 search() {
     if [[ -z "$pattern" ]]; then
@@ -140,10 +131,25 @@ search() {
     else
         list=$(grep -Ei "${pattern}" "$outfile")
     fi
-    list=$(echo -n "$list" | sort)
+
+    list=$(echo "$list" | sort)
+    list_len=$(echo "$list" | wc -l | grep -Eo '[0-9]+')
+
     if [[ $1 == 'print' ]]; then
         print_list
     fi
+}
+
+usage() {
+    echo '****************************************'
+    echo '[1-9] - choose entry from playlist'
+    echo 'l     - print the playlist'
+    echo 'n     - next track'
+    echo 'q     - quit'
+    echo 'r     - toggle random play'
+    echo 's     - start/stop play'
+    echo '?     - show usage'
+    echo '****************************************'
 }
 
 ################################################################################
