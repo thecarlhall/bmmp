@@ -8,6 +8,17 @@ After years of building web-based music servers, and running other products, lik
 
 bmmp supports playing mp3 files as noted in an m3u playlist.  The files played can be filtered using using extended regular expressions as provided by `grep -E`.
 
+```
+****************************************
+ [1-9] - choose entry from playlist
+ l     - print the playlist
+ n     - next track
+ q     - quit
+ r     - toggle random play
+ s     - start/stop play
+ ?     - show usage
+****************************************
+```
 ### Playing
 
 #### Use entire playlist

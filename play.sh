@@ -142,13 +142,13 @@ search() {
 
 usage() {
     echo '****************************************'
-    echo '[1-9] - choose entry from playlist'
-    echo 'l     - print the playlist'
-    echo 'n     - next track'
-    echo 'q     - quit'
-    echo 'r     - toggle random play'
-    echo 's     - start/stop play'
-    echo '?     - show usage'
+    echo ' [1-9] - choose entry from playlist'
+    echo ' l     - print the playlist'
+    echo ' n     - next track'
+    echo ' q     - quit'
+    echo ' r     - toggle random play'
+    echo ' s     - start/stop play'
+    echo ' ?     - show usage'
     echo '****************************************'
 }
 
