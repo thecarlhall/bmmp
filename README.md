@@ -10,9 +10,19 @@ bmmp supports playing mp3 files as noted in an m3u playlist.  The files played c
 
 ```
 ****************************************
+ :arguments:
+****************************************
+ -c   config file
+ -r   turn on random play
+ -s   search without playing
+
+****************************************
+ :runtime:
+****************************************
  [1-9] - choose entry from playlist
  l     - print the playlist
  n     - next track
+ p     - previous track
  q     - quit
  r     - toggle random play
  s     - start/stop play
@@ -22,9 +32,9 @@ bmmp supports playing mp3 files as noted in an m3u playlist.  The files played c
 
 Use `.bmmp.env.example` to setup the config for running all scripts.
 
-`location` - used to look for files to generate an m3u file
-`server` - the host url where files will be served
-`playlist_file` - name of playlist for file generating and playing
+- `location` - used to look for files to generate an m3u file
+- `server` - the host url where files will be served
+- `playlist_file` - name of playlist for file generating and playing
 
 ### Playing
 

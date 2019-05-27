@@ -147,9 +147,19 @@ search() {
 ## print usage details
 usage() {
     echo '****************************************'
+    echo ' :arguments:'
+    echo '****************************************'
+    echo ' -c   config file'
+    echo ' -r   turn on random play'
+    echo ' -s   search without playing'
+    echo
+    echo '****************************************'
+    echo ' :runtime:'
+    echo '****************************************'
     echo ' [1-9] - choose entry from playlist'
     echo ' l     - print the playlist'
     echo ' n     - next track'
+    echo ' p     - previous track'
     echo ' q     - quit'
     echo ' r     - toggle random play'
     echo ' s     - start/stop play'
