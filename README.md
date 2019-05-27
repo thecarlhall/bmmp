@@ -19,6 +19,13 @@ bmmp supports playing mp3 files as noted in an m3u playlist.  The files played c
  ?     - show usage
 ****************************************
 ```
+
+Use `.bmmp.env.example` to setup the config for running all scripts.
+
+`location` - used to look for files to generate an m3u file
+`server` - the host url where files will be served
+`playlist_file` - name of playlist for file generating and playing
+
 ### Playing
 
 #### Use entire playlist
@@ -45,6 +52,12 @@ bmmp supports playing mp3 files as noted in an m3u playlist.  The files played c
 
 ```bash
 ./play.sh -s Nas
+```
+
+### Generating playlist
+
+```
+./generate_m3u.sh
 ```
 
 ## Dependencies

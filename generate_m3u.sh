@@ -17,9 +17,9 @@ find $location -type f -iname '*.mp3' | \
         -e 's/)/%29/g' \
         -e 's/\[/%5B/g' \
         -e 's/\]/%5D/g' \
-    > "$outfile"
+    > "$playlist_file"
 
-line_count=$(wc -l < "$outfile")
+line_count=$(wc -l < "$playlist_file")
 
-echo Wrote $line_count entries to $outfile
+echo Wrote $line_count entries to $playlist_file
 

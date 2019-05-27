@@ -1,15 +1,13 @@
 #!/usr/bin/env bash
 set -e
 
-source ./.bmmp.env
-
 ################################################################################
 ##  functions
 ################################################################################
 ## https://stackoverflow.com/a/37840948/201197
 urldecode() { : "${*//+/ }"; echo -e "${_//%/\\x}"; }
 
-## choose the next line to play
+## choose the next track to play
 choose_next() {
     first=1
 
@@ -23,6 +21,12 @@ choose_next() {
             pick=$list_len
         fi
         echo ** playing user pick $pick
+
+    elif [ "$previous" = true ]; then
+        unset previous
+        if [[ $pick -gt 1 ]]; then
+            pick=$((pick - 1))
+        fi
 
     elif [ "$random" = true ]; then
         ## pick a random track from the list
@@ -39,9 +43,37 @@ choose_next() {
 }
 
 kill_it() {
+    if [[ -z "$last_pid" ]]; then
+        return
+    fi
+
     if ps -p $last_pid > /dev/null; then
         kill $last_pid
+        unset last_pid
+        state=stopped
     fi
+}
+
+play_url() {
+    curl -ks "$url" | mpg123 --long-tag - & last_pid=$!
+    state=playing
+}
+
+start_stop() {
+    if [[ "$state" == 'playing' ]]; then
+        kill_it
+    else
+        play_url
+    fi
+}
+
+toggle_random() {
+    if [ "$random" = true ]; then
+        random=false
+    else
+        random=true
+    fi
+    echo -e "** set random to $random"
 }
 
 ## play songs based on a search
@@ -54,15 +86,14 @@ play() {
         choose_next
 
         echo '--------------------------------------------------------------------------------'
-        line=$(echo "$list" | sed -n ${pick}p)
-        curl -ks "$line" | mpg123 - & last_pid=$!
-        state=playing
+        url=$(echo "$list" | sed -n ${pick}p)
+        play_url
 
         while true; do
             read -s -n 1 -t 1 cmd || true
 
             case $cmd in
-                [1-9])  # pick an entry from the playlist
+                [1-9])
                     read -p "Choose track [playing $pick of $list_len]: " -e -i "$cmd" user_pick
 
                     if [[ ! -z "$user_pick" ]]; then
@@ -71,49 +102,22 @@ play() {
                     fi
                     ;;
 
-                l)  # list contents of playlist
-                    print_list
-                    ;;
-
-                n)  # play next song in list
-                    kill_it
-                    break
-                    ;;
-
-                q)  # quit
-                    kill_it
-                    echo '** bye!'
-                    exit 0
-                    ;;
-
-                r)  # toggle random
-                    if [ "$random" = true ]; then
-                        random=false
-                    else
-                        random=true
-                    fi
-                    echo -e "** set random to $random"
-                    ;;
-
-                s)  # start/stop playing
-                    if [[ "$state" == 'playing' ]]; then
-                        kill_it
-                        state=stopped
-                    else
-                        curl -ks "$line" | mpg123 - & last_pid=$!
-                        state=playing
-                    fi
-                    ;;
-
-                \?) # usage
-                    usage
-                    ;;
+                l) print_list ;;
+                n) kill_it; break ;;
+                p) previous=true; kill_it; break ;;
+                q) kill_it; echo '** bye!'; exit 0 ;;
+                r) toggle_random ;;
+                s) start_stop ;;
+                \?) usage ;;
             esac
 
+            ## if should be playing, but is missing mpg123 process, assume an
+            ## error happend, so break the loop to start the next track
             if [[ "$state" == "playing" && -z "$(pgrep mpg123)" ]]; then
                 break
             fi
         done
+        echo '--------------------------------------------------------------------------------'
     done
 }
 
@@ -127,9 +131,9 @@ print_list() {
 ## search the playlist
 search() {
     if [[ -z "$pattern" ]]; then
-        list=$(<"$outfile")
+        list=$(<"$playlist_file")
     else
-        list=$(grep -Ei "${pattern}" "$outfile")
+        list=$(grep -Ei "${pattern}" "$playlist_file")
     fi
 
     list=$(echo "$list" | sort)
@@ -140,6 +144,7 @@ search() {
     fi
 }
 
+## print usage details
 usage() {
     echo '****************************************'
     echo ' [1-9] - choose entry from playlist'
@@ -155,22 +160,30 @@ usage() {
 ################################################################################
 ##  main
 ################################################################################
-while getopts r:s: option; do
-    case "${option}" in
+config="./.bmmp.env"
+
+while getopts c:rs option; do
+    case $option in
+        c) 
+            config=$OPTARG
+            ;;
         r)
             random=true
-            pattern=$OPTARG
-            play
             ;;
         s)
-            pattern=$OPTARG
-            search 'print'
+            action=search
             ;;
     esac
 done
 
-if [[ $OPTIND -eq 1 && ! -z "$1" ]]; then
-    pattern=$1
+echo reading config from $config
+source "$config"
+
+pattern=${!OPTIND}
+
+if [[ "$action" == "search" ]]; then
+    search 'print'
+else
     play
 fi
 
