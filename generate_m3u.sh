@@ -1,7 +1,20 @@
 #!/usr/bin/env bash
 set -e
 
-source ./.bmmp.env
+while getopts c:l:o:s: option; do
+    case $option in
+        l) location=$OPTARG ;;
+        o) output=$OPTARG ;;
+        s) server=$OPTARG ;;
+    esac
+done
+
+output=${output:-playlist.m3u}
+
+if [[ -z "$location" || -z "$server" ]]; then 
+    echo 'Set -l (location), -s (server)'
+    exit 1
+fi
 
 # add a line for each mp3 and replace some url characters
 find $location -type f -iname '*.mp3' | \
@@ -17,9 +30,9 @@ find $location -type f -iname '*.mp3' | \
         -e 's/)/%29/g' \
         -e 's/\[/%5B/g' \
         -e 's/\]/%5D/g' \
-    > "$playlist_file"
+    > "$output"
 
-line_count=$(wc -l < "$playlist_file")
+line_count=$(wc -l < "$output")
 
-echo Wrote $line_count entries to $playlist_file
+echo Wrote $line_count entries to $output
 

@@ -123,8 +123,7 @@ play() {
 
 ## print the playlist
 print_list() {
-    deprefixed=$(echo "$list" | sed "s,^$server/,,g")
-    decoded=$(urldecode "$deprefixed")
+    decoded=$(urldecode "$list")
     echo "$decoded" | less -N
 }
 
@@ -170,24 +169,15 @@ usage() {
 ################################################################################
 ##  main
 ################################################################################
-config="./.bmmp.env"
-
 while getopts c:rs option; do
     case $option in
-        c) 
-            config=$OPTARG
-            ;;
-        r)
-            random=true
-            ;;
-        s)
-            action=search
-            ;;
+        r) random=true ;;
+        s) action=search ;;
     esac
 done
 
-echo reading config from $config
-source "$config"
+playlist_file=${playlist_file:-playlist.m3u}
+echo "Reading playlist from $playlist_file"
 
 pattern=${!OPTIND}
 
