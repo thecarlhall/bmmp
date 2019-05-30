@@ -20,7 +20,6 @@ choose_next() {
         elif [[ $pick -gt $list_len ]]; then
             pick=$list_len
         fi
-        echo ** playing user pick $pick
 
     elif [ "$previous" = true ]; then
         unset previous
@@ -40,6 +39,8 @@ choose_next() {
         ## advance to the next track or wrap back to the beginning
         pick=$((pick % list_len + 1))
     fi
+
+    echo "** playing track $pick"
 }
 
 kill_it() {
@@ -55,6 +56,7 @@ kill_it() {
 }
 
 play_url() {
+    echo $(urldecode "$url")
     curl -ks "$url" | mpg123 --long-tag - & last_pid=$!
     state=playing
 }
@@ -83,11 +85,12 @@ play() {
     pick=0
     state=stopped
     while true; do
+        echo '--------------------------------------------------------------------------------'
         choose_next
 
-        echo '--------------------------------------------------------------------------------'
         url=$(echo "$list" | sed -n ${pick}p)
         play_url
+        echo '--------------------------------------------------------------------------------'
 
         while true; do
             read -s -n 1 -t 1 cmd || true
@@ -117,7 +120,6 @@ play() {
                 break
             fi
         done
-        echo '--------------------------------------------------------------------------------'
     done
 }
 
