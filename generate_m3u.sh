@@ -32,7 +32,7 @@ find $location -type f -iname '*.mp3' | \
         -e 's/\]/%5D/g' \
     > "$output"
 
-line_count=$(wc -l < "$output")
+line_count=$(sed -n '$=' "$output")
 
 echo Wrote $line_count entries to $output
 

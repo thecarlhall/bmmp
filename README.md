@@ -8,17 +8,19 @@ After years of building web-based music servers, and running other products, lik
 
 bmmp supports playing mp3 files as noted in an m3u playlist.  The files played can be filtered using using extended regular expressions as provided by `grep -E`.
 
+### Arguments
+
+#### Playing
+
+**Arguments to start**
 ```
-****************************************
- :arguments:
-****************************************
- -c   config file
+ -p   playlist file to use.  Defaults to 'playlist.m3u'
  -r   turn on random play
  -s   search without playing
+ ```
 
-****************************************
- :runtime:
-****************************************
+**Menu while running**
+```
  [1-9] - choose entry from playlist
  l     - print the playlist
  n     - next track
@@ -27,14 +29,14 @@ bmmp supports playing mp3 files as noted in an m3u playlist.  The files played c
  r     - toggle random play
  s     - start/stop play
  ?     - show usage
-****************************************
 ```
 
-Use `.bmmp.env.example` to setup the config for running all scripts.
-
-- `location` - used to look for files to generate an m3u file
-- `server` - the host url where files will be served
-- `playlist_file` - name of playlist for file generating and playing
+#### Generating Playlist
+```
+ -l   location to scan for mp3 files
+ -o   output file where to write playlist. Defaults to 'playlist.m3u'
+ -s   the host url where files will be served
+```
 
 ### Playing
 
@@ -76,14 +78,13 @@ Use `.bmmp.env.example` to setup the config for running all scripts.
 
 - find
 - sed
-- wc
 
 ### Playing Playlist
 
-- sed
+- curl
 - grep
 - kill
 - jot _or_ shuf
-- curl
 - mpg123
+- sed
 

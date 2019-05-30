@@ -138,7 +138,7 @@ search() {
     fi
 
     list=$(echo "$list" | sort)
-    list_len=$(echo "$list" | wc -l | grep -Eo '[0-9]+')
+    list_len=$(echo "$list" | sed -n '$=')
 
     if [[ $1 == 'print' ]]; then
         print_list
@@ -150,7 +150,6 @@ usage() {
     echo '****************************************'
     echo ' :arguments:'
     echo '****************************************'
-    echo ' -c   config file'
     echo ' -r   turn on random play'
     echo ' -s   search without playing'
     echo
@@ -171,8 +170,9 @@ usage() {
 ################################################################################
 ##  main
 ################################################################################
-while getopts c:rs option; do
+while getopts p:rs option; do
     case $option in
+        p) playlist_file=$OPTARG ;;
         r) random=true ;;
         s) action=search ;;
     esac
