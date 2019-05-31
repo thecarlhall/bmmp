@@ -84,6 +84,7 @@ bmmp supports playing mp3 files as noted in an m3u playlist.  The files played c
 - curl
 - grep
 - kill
+- less
 - jot _or_ shuf
 - mpg123
 - sed
