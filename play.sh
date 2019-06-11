@@ -125,8 +125,7 @@ play() {
 
 ## print the playlist
 print_list() {
-    decoded=$(urldecode "$list")
-    echo "$decoded" | less -N
+    echo "$(urldecode "$list")" | less -N +${pick}g
 }
 
 ## search the playlist
