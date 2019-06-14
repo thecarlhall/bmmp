@@ -133,7 +133,8 @@ search() {
     if [[ -z "$pattern" ]]; then
         list=$(<"$playlist_file")
     else
-        list=$(grep -Ei "${pattern}" "$playlist_file")
+        # replace space with 'any char'
+        list=$(grep -Ei "${pattern//[ ]/.+}" "$playlist_file")
     fi
 
     list=$(echo "$list" | sort)
