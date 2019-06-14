@@ -43,6 +43,7 @@ choose_next() {
     echo "** playing track $pick"
 }
 
+## kill the mpg123 process if running
 kill_it() {
     if [[ -z "$last_pid" ]]; then
         return
@@ -55,12 +56,14 @@ kill_it() {
     fi
 }
 
+## use mpg123 to play an mp3 by url
 play_url() {
     echo $(urldecode "$url")
     curl -ks "$url" | mpg123 --long-tag - & last_pid=$!
     state=playing
 }
 
+## toggle starting or stopping a url
 start_stop() {
     if [[ "$state" == 'playing' ]]; then
         kill_it
@@ -69,6 +72,7 @@ start_stop() {
     fi
 }
 
+## toggle the random setting used when choosing the next entry to play
 toggle_random() {
     if [ "$random" = true ]; then
         random=false
