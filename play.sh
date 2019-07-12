@@ -135,9 +135,11 @@ print_list() {
 ## search the playlist
 search() {
     if [[ -z "$pattern" ]]; then
+        echo "Using entire playlist..."
         list=$(<"$playlist_file")
     else
         # replace space with 'any char'
+        echo "Searching for '$pattern'..."
         list=$(grep -Ei "${pattern//[ ]/.+}" "$playlist_file")
     fi
 
@@ -185,7 +187,8 @@ done
 playlist_file=${playlist_file:-playlist.m3u}
 echo "Reading playlist from $playlist_file"
 
-pattern=${!OPTIND}
+shift $((OPTIND-1))
+pattern="$@"
 
 if [[ "$action" == "search" ]]; then
     search 'print'
