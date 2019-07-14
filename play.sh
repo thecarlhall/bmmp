@@ -7,6 +7,24 @@ set -e
 ## https://stackoverflow.com/a/37840948/201197
 urldecode() { : "${*//+/ }"; echo -e "${_//%/\\x}"; }
 
+## look for the playlist in known locations
+find_playlist() {
+    possible_playlists=( $playlist_file ~/.bmmp/playlist.m3u playlist.m3u )
+    
+    for playlist in ${possible_playlists[@]}; do
+        if [[ -f $playlist ]]; then
+            playlist_file=$playlist
+            echo "Reading playlist from $playlist_file"
+            return
+        fi
+    done
+
+    #if [[ -z $playlist_file ]]; then
+        echo "No playlist found!"
+        exit -2
+    #fi
+}
+
 ## choose the next track to play
 choose_next() {
     first=1
@@ -205,7 +223,11 @@ while getopts p:rs option; do
     esac
 done
 
+<<<<<<< HEAD
 load_playlist
+=======
+find_playlist
+>>>>>>> Add checklist to find playlist in multiple locations
 
 shift $((OPTIND-1))
 pattern="$@"
