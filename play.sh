@@ -58,7 +58,7 @@ choose_next() {
         pick=$((pick % list_len + 1))
     fi
 
-    echo "** playing track $pick"
+    url=$(echo "$list" | sed -n ${pick}p)
 }
 
 load_playlist() {
@@ -94,6 +94,8 @@ kill_it() {
 
 ## use mpg123 to play an mp3 by url
 play_url() {
+    echo "** playing track $pick"
+
     echo $(urldecode "$url")
     curl -ks "$url" | mpg123 --long-tag - & last_pid=$!
     state=playing
@@ -128,7 +130,6 @@ play() {
         echo '--------------------------------------------------------------------------------'
         choose_next
 
-        url=$(echo "$list" | sed -n ${pick}p)
         play_url
         echo '--------------------------------------------------------------------------------'
 
