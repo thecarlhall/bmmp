@@ -140,7 +140,10 @@ search() {
     else
         # replace space with 'any char'
         echo "Searching for '$pattern'..."
-        list=$(grep -Ei "${pattern//[ ]/.+}" "$playlist_file")
+        esc_pattern="${pattern//[\.]/\\.}"    # replace dots with escaped dots for explicit match
+        esc_pattern="${esc_pattern//[ ]/.+}"  # replace spaces with .+ for fuzzy matching
+        #echo "Using pattern: ${esc_pattern}"
+        list=$(grep -Ei "$esc_pattern" "$playlist_file")
     fi
 
     list=$(echo "$list" | sort)
