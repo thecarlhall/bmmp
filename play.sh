@@ -43,6 +43,24 @@ choose_next() {
     echo "** playing track $pick"
 }
 
+load_playlist() {
+    if [[ -z $playlist_file ]]; then
+        playlists=( ./playlist-bmmp.m3u ./playlist.m3u ~/playlist-bmmp.m3u )
+        for pl in "${playlists[@]}"; do
+            if [[ -r $pl ]]; then
+                playlist_file=$pl
+                break
+            fi
+        done
+    fi
+    
+    if [[ -z $playlist_file ]]; then
+        echo "Unable to find playlist!"
+        exist -3
+    fi
+    echo "Reading playlist from $playlist_file"
+}
+
 ## kill the mpg123 process if running
 kill_it() {
     if [[ -z "$last_pid" ]]; then
@@ -187,8 +205,7 @@ while getopts p:rs option; do
     esac
 done
 
-playlist_file=${playlist_file:-playlist.m3u}
-echo "Reading playlist from $playlist_file"
+load_playlist
 
 shift $((OPTIND-1))
 pattern="$@"
