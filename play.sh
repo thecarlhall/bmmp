@@ -8,7 +8,7 @@ set -e
 urldecode() { : "${*//+/ }"; echo -e "${_//%/\\x}"; }
 
 ## look for the playlist in known locations
-find_playlist() {
+load_playlist() {
     possible_playlists=( $playlist_file ~/.bmmp/playlist.m3u playlist.m3u )
     
     for playlist in ${possible_playlists[@]}; do
@@ -19,10 +19,8 @@ find_playlist() {
         fi
     done
 
-    #if [[ -z $playlist_file ]]; then
-        echo "No playlist found!"
-        exit -2
-    #fi
+    echo "No playlist found!"
+    exit -2
 }
 
 ## choose the next track to play
@@ -59,24 +57,6 @@ choose_next() {
     fi
 
     url=$(echo "$list" | sed -n ${pick}p)
-}
-
-load_playlist() {
-    if [[ -z $playlist_file ]]; then
-        playlists=( ./playlist-bmmp.m3u ./playlist.m3u ~/playlist-bmmp.m3u )
-        for pl in "${playlists[@]}"; do
-            if [[ -r $pl ]]; then
-                playlist_file=$pl
-                break
-            fi
-        done
-    fi
-    
-    if [[ -z $playlist_file ]]; then
-        echo "Unable to find playlist!"
-        exist -3
-    fi
-    echo "Reading playlist from $playlist_file"
 }
 
 ## kill the mpg123 process if running
@@ -224,11 +204,7 @@ while getopts p:rs option; do
     esac
 done
 
-<<<<<<< HEAD
 load_playlist
-=======
-find_playlist
->>>>>>> Add checklist to find playlist in multiple locations
 
 shift $((OPTIND-1))
 pattern="$@"
