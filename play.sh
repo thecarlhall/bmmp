@@ -28,7 +28,11 @@ choose_next() {
     first=1
 
     if [[ ! -z "$user_pick" ]]; then
-        pick=$user_pick
+        if [[ ${user_pick:0:1} == "-" || ${user_pick:0:1} == "+" ]]; then
+            pick=$(($pick $user_pick))
+        else
+            pick=$user_pick
+        fi
         unset user_pick
 
         if [[ $pick -lt $first ]]; then
@@ -117,7 +121,7 @@ play() {
             read -s -n 1 -t 1 cmd || true
 
             case $cmd in
-                [1-9])
+                [1-9+-])
                     read -p "Choose track [playing $pick of $list_len]: " -e -i "$cmd" user_pick
 
                     if [[ ! -z "$user_pick" ]]; then
@@ -129,7 +133,7 @@ play() {
                 l) print_list ;;
                 n) kill_it; break ;;
                 p) previous=true; kill_it; break ;;
-                q) kill_it; echo '** bye!'; exit 0 ;;
+                q) kill_it; echo '** bye!'; return 0 ;;
                 r) toggle_random ;;
                 s) start_stop ;;
                 \?) usage ;;
