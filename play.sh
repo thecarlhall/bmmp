@@ -169,10 +169,6 @@ search() {
 
     list=$(echo "$list" | sort)
     list_len=$(echo "$list" | sed -n '$=')
-
-    if [[ $1 == 'print' ]]; then
-        print_list
-    fi
 }
 
 ## print usage details
@@ -214,7 +210,8 @@ shift $((OPTIND-1))
 pattern="$@"
 
 if [[ "$action" == "search" ]]; then
-    search 'print'
+    search
+    print_list
 else
     play
 fi
