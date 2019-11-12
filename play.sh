@@ -8,7 +8,7 @@ set -e
 urldecode() { : "${*//+/ }"; echo -e "${_//%/\\x}"; }
 
 ## look for the playlist in known locations
-load_playlist() {
+find_playlist() {
     possible_playlists=( $playlist_file ~/.bmmp/playlist.m3u playlist.m3u )
     
     for playlist in ${possible_playlists[@]}; do
@@ -60,7 +60,11 @@ choose_next() {
         pick=$((pick % list_len + 1))
     fi
 
-    url=$(echo "$list" | sed -n ${pick}p)
+    if [[ -z "$list" ]]; then
+        url=$(sed "${pick}q;d" "$playlist_file")
+    else
+        url=$(echo "$list" | sed -n ${pick}p)
+    fi
 }
 
 ## kill the mpg123 process if running
@@ -157,18 +161,17 @@ print_list() {
 search() {
     if [[ -z "$pattern" ]]; then
         echo "Using entire playlist..."
-        list=$(<"$playlist_file")
+        unset list
+        list_len=$(sed -n '$=' "$playlist_file")
     else
         # replace space with 'any char'
         echo "Searching for '$pattern'..."
         esc_pattern="${pattern//[\.]/\\.}"    # replace dots with escaped dots for explicit match
         esc_pattern="${esc_pattern//[ ]/.+}"  # replace spaces with .+ for fuzzy matching
         #echo "Using pattern: ${esc_pattern}"
-        list=$(grep -Ei "$esc_pattern" "$playlist_file")
+        list=$(grep -Ei "$esc_pattern" "$playlist_file" | sort)
+        list_len=$(echo "$list" | sed -n '$=')
     fi
-
-    list=$(echo "$list" | sort)
-    list_len=$(echo "$list" | sed -n '$=')
 }
 
 ## print usage details
@@ -204,7 +207,7 @@ while getopts p:rs option; do
     esac
 done
 
-load_playlist
+find_playlist
 
 shift $((OPTIND-1))
 pattern="$@"
