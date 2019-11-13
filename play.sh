@@ -85,7 +85,7 @@ play_url() {
     echo "** playing track $pick"
 
     echo $(urldecode "$url")
-    curl -ks "$url" | mpg123 --long-tag - & last_pid=$!
+    curl -ks "$url" | mpg123 --resync-limit 2048 --long-tag - & last_pid=$!
     state=playing
 }
 
