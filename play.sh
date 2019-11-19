@@ -19,7 +19,7 @@ find_playlist() {
         fi
     done
 
-    echo "No playlist found!"
+    echo "!! No playlist found"
     exit -2
 }
 
@@ -166,10 +166,15 @@ search() {
     else
         # replace space with 'any char'
         echo "Searching for '$pattern'..."
+        esc_pattern=pattern
         esc_pattern="${pattern//[\.]/\\.}"    # replace dots with escaped dots for explicit match
         esc_pattern="${esc_pattern//[ ]/.+}"  # replace spaces with .+ for fuzzy matching
         #echo "Using pattern: ${esc_pattern}"
         list=$(grep -Ei "$esc_pattern" "$playlist_file" | sort)
+        if [[ -z "$list" ]]; then
+            echo "!! Did not find results for '${pattern}'"
+            exit -1
+        fi
         list_len=$(echo "$list" | sed -n '$=')
     fi
 }
