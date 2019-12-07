@@ -190,22 +190,23 @@ usage() {
     echo '****************************************'
     echo ' :runtime:'
     echo '****************************************'
-    echo ' [1-9] - choose entry from playlist'
-    echo ' l     - print the playlist'
-    echo ' n     - next track'
-    echo ' p     - previous track'
-    echo ' q     - quit'
-    echo ' r     - toggle random play'
-    echo ' s     - start/stop play'
-    echo ' ?     - show usage'
+    echo ' [1-9]+ - choose entry from playlist'
+    echo ' l      - print the playlist'
+    echo ' n      - next track'
+    echo ' p      - previous track'
+    echo ' q      - quit'
+    echo ' r      - toggle random play'
+    echo ' s      - start/stop play'
+    echo ' ?      - show usage'
     echo '****************************************'
 }
 
 ################################################################################
 ##  main
 ################################################################################
-while getopts p:rs option; do
+while getopts :hp:rs option; do
     case $option in
+        h) action=help ;;
         p) playlist_file=$OPTARG ;;
         r) random=true ;;
         s) action=search ;;
@@ -217,7 +218,9 @@ find_playlist
 shift $((OPTIND-1))
 pattern="$@"
 
-if [[ "$action" == "search" ]]; then
+if [[ "$action" == "help" ]]; then
+    usage
+elif [[ "$action" == "search" ]]; then
     search
     print_list
 else
