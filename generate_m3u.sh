@@ -17,8 +17,8 @@ if [[ -z "$location" || -z "$server" ]]; then
 fi
 
 # add a line for each mp3 and replace some url characters
+# this reflects play.sh
 find $location -type f -iname '*.mp3' | \
-
     sed -e "s,^$location,$server,g" \
         -e 's, ,%20,g' \
         -e 's,!,%21,g' \
