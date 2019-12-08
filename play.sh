@@ -5,7 +5,31 @@ set -e
 ##  functions
 ################################################################################
 ## https://stackoverflow.com/a/37840948/201197
-urldecode() { : "${*//+/ }"; echo -e "${_//%/\\x}"; }
+#urldecode() { : "${*//+/ }"; echo -e "${_//%/\\x}"; }
+
+urldecode() {
+    replace="sed -e 's,%20, ,g' "
+    replace+="  -e 's,%21,!,g' "
+    replace+="  -e 's,%22,\",g' "
+    replace+="  -e 's,%23,#,g' "
+    replace+="  -e 's,%24,$,g' "
+    replace+="  -e 's,%26,\&,g' "
+    replace+='  -e "s,%27,'"'"',g" '
+    replace+="  -e 's,%28,(,g' "
+    replace+="  -e 's,%29,),g' "
+    replace+="  -e 's,%5B,[,g' "
+    replace+="  -e 's,%5D,],g' "
+    replace+="  -e 's,%7B,{,g' "
+    replace+="  -e 's,%7D,},g' "
+
+    ## if there's no input, use the whole playlist file
+    if [[ -z "$1" ]]; then
+        eval $replace $playlist_file
+    else
+        echo "$1" | eval $replace
+    fi
+
+}
 
 ## look for the playlist in known locations
 find_playlist() {
@@ -166,7 +190,6 @@ search() {
     else
         # replace space with 'any char'
         echo "Searching for '$pattern'..."
-        esc_pattern=pattern
         esc_pattern="${pattern//[\.]/\\.}"    # replace dots with escaped dots for explicit match
         esc_pattern="${esc_pattern//[ ]/.+}"  # replace spaces with .+ for fuzzy matching
         #echo "Using pattern: ${esc_pattern}"
