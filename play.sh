@@ -181,7 +181,7 @@ play() {
 
 ## print the playlist
 print_list() {
-    echo "$(urldecode "$list")" | less -N +${pick}g
+    echo "$(urldecode "$list")" | less --chop-long-lines --LINE-NUMBERS +${pick}g
 }
 
 ## search the playlist
@@ -193,8 +193,8 @@ search() {
     else
         # replace space with 'any char'
         echo "Searching for '$pattern'..."
-        local esc_pattern="${pattern//[\.]/\\.}"    # replace dots with escaped dots for explicit match
-        esc_pattern="${esc_pattern//[ ]/.+}"  # replace spaces with .+ for fuzzy matching
+        local esc_pattern="${pattern//[\.]/\\.}"  # replace dots with escaped dots for explicit match
+        esc_pattern="${esc_pattern//[ ]/.+}"      # replace spaces with .+ for fuzzy matching
         #echo "Using pattern: ${esc_pattern}"
         list=$(grep -Ei "$esc_pattern" "$playlist_file" | sort)
         if [[ -z "$list" ]]; then
