@@ -5,18 +5,18 @@ set -e
 # this reflects generate_m3u.sh
 # duplicated to save redefinition given of frequency of use
 replace="sed -e 's,%20, ,g' "
-replace+="  -e 's,%21,!,g' "
-replace+="  -e 's,%22,\",g' "
-replace+="  -e 's,%23,#,g' "
-replace+="  -e 's,%24,$,g' "
-replace+="  -e 's,%26,\&,g' "
-replace+='  -e "s,%27,'"'"',g" '
-replace+="  -e 's,%28,(,g' "
-replace+="  -e 's,%29,),g' "
-replace+="  -e 's,%5B,[,g' "
-replace+="  -e 's,%5D,],g' "
-replace+="  -e 's,%7B,{,g' "
-replace+="  -e 's,%7D,},g' "
+replace+="-e 's,%21,!,g' "
+replace+="-e 's,%22,\",g' "
+replace+="-e 's,%23,#,g' "
+replace+="-e 's,%24,$,g' "
+replace+="-e 's,%26,\&,g' "
+replace+='-e "s,%27,'"'"',g" '
+replace+="-e 's,%28,(,g' "
+replace+="-e 's,%29,),g' "
+replace+="-e 's,%5B,[,g' "
+replace+="-e 's,%5D,],g' "
+replace+="-e 's,%7B,{,g' "
+replace+="-e 's,%7D,},g' "
 
 ################################################################################
 ##  functions
@@ -32,6 +32,17 @@ urldecode() {
         echo "$1" | eval $replace
     fi
 
+}
+
+load_config() {
+    [[ -f "${config_file}" ]] && source "${config_file}"
+
+    KEY_LIST=${KEY_LIST:-l}
+    KEY_NEXT=${KEY_NEXT:-n}
+    KEY_PREV=${KEY_PREV:-p}
+    KEY_QUIT=${KEY_QUIT:-q}
+    KEY_RANDOM=${KEY_RANDOM:-r}
+    KEY_PLAY_PAUSE=${KEY_PLAY_PAUSE:-s}
 }
 
 ## look for the playlist in known locations
@@ -117,7 +128,7 @@ play_url() {
 }
 
 ## toggle starting or stopping a url
-start_stop() {
+play_pause() {
     if [[ "$state" == 'playing' ]]; then
         kill_it
     else
@@ -161,12 +172,12 @@ play() {
                     fi
                     ;;
 
-                l) print_list ;;
-                n) kill_it; break ;;
-                p) previous=true; kill_it; break ;;
-                q) kill_it; echo '** bye!'; return 0 ;;
-                r) toggle_random ;;
-                s) start_stop ;;
+                $KEY_LIST) print_list ;;
+                $KEY_NEXT) kill_it; break ;;
+                $KEY_PREV) previous=true; kill_it; break ;;
+                $KEY_QUIT) kill_it; echo '** bye!'; return 0 ;;
+                $KEY_RANDOM) toggle_random ;;
+                $KEY_PLAY_PAUSE) play_pause ;;
                 \?) usage ;;
             esac
 
@@ -210,20 +221,22 @@ usage() {
     echo '****************************************'
     echo ' :arguments:'
     echo '****************************************'
+    echo ' -h   show help and usage'
+    echo ' -p   location of the playlist file to use'
     echo ' -r   turn on random play'
     echo ' -s   search without playing'
     echo
     echo '****************************************'
     echo ' :runtime:'
     echo '****************************************'
-    echo ' [1-9]+ - choose entry from playlist'
-    echo ' l      - print the playlist'
-    echo ' n      - next track'
-    echo ' p      - previous track'
-    echo ' q      - quit'
-    echo ' r      - toggle random play'
-    echo ' s      - start/stop play'
     echo ' ?      - show usage'
+    echo ' [1-9]+ - choose entry from playlist'
+    echo " $KEY_LIST      - print the playlist"
+    echo " $KEY_NEXT      - next track"
+    echo " $KEY_PREV      - previous track"
+    echo " $KEY_QUIT      - quit"
+    echo " $KEY_RANDOM      - toggle random play"
+    echo " $KEY_PLAY_PAUSE      - play and pause"
     echo '****************************************'
 }
 
@@ -232,12 +245,16 @@ usage() {
 ################################################################################
 while getopts :hp:rs option; do
     case $option in
+        c) config_file=$OPTARG ;;
         h) action=help ;;
         p) playlist_file=$OPTARG ;;
         r) random=true ;;
         s) action=search ;;
     esac
 done
+
+config_file=${config_file:-~/.bmmp/config}
+load_config
 
 find_playlist
 
