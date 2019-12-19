@@ -18,8 +18,8 @@ fi
 
 # add a line for each mp3 and replace some url characters
 # this reflects play.sh
-find $location -type f -iname '*.mp3' | \
-    sed -e "s,^$location,$server,g" \
+find $location -type f -iname '*.mp3' \
+    | sed -e "s,^$location,$server,g" \
         -e 's, ,%20,g' \
         -e 's,!,%21,g' \
         -e 's,",%22,g' \
@@ -32,7 +32,9 @@ find $location -type f -iname '*.mp3' | \
         -e 's,\[,%5B,g' \
         -e 's,\],%5D,g' \
         -e 's,{,%7B,g' \
-        -e 's,},%7D,g' \
+        -e 's,},%7D,g'  \
+    | sort \
+    | uniq \
     > "$output"
 
 line_count=$(sed -n '$=' "$output")
