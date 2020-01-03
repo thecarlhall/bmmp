@@ -4,19 +4,20 @@ set -e
 # sed command used for url code replacement
 # this reflects generate_m3u.sh
 # duplicated to save redefinition given of frequency of use
-replace="sed -e 's,%20, ,g' "
-replace+="-e 's,%21,!,g' "
-replace+="-e 's,%22,\",g' "
-replace+="-e 's,%23,#,g' "
-replace+="-e 's,%24,$,g' "
-replace+="-e 's,%26,\&,g' "
-replace+='-e "s,%27,'"'"',g" '
-replace+="-e 's,%28,(,g' "
-replace+="-e 's,%29,),g' "
-replace+="-e 's,%5B,[,g' "
-replace+="-e 's,%5D,],g' "
-replace+="-e 's,%7B,{,g' "
-replace+="-e 's,%7D,},g' "
+replace="sed"
+replace+=" -e 's,%20, ,g'"
+replace+=" -e 's,%21,!,g'"
+replace+=" -e 's,%22,\",g'"
+replace+=" -e 's,%23,#,g'"
+replace+=" -e 's,%24,$,g'"
+replace+=" -e 's,%26,\&,g'"
+replace+=' -e "s,%27,'"'"',g"'
+replace+=" -e 's,%28,(,g'"
+replace+=" -e 's,%29,),g'"
+replace+=" -e 's,%5B,[,g'"
+replace+=" -e 's,%5D,],g'"
+replace+=" -e 's,%7B,{,g'"
+replace+=" -e 's,%7D,},g'"
 
 ################################################################################
 ##  functions
