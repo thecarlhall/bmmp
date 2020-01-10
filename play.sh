@@ -225,7 +225,7 @@ usage() {
     echo ' -h   show help and usage'
     echo ' -p   location of the playlist file to use'
     echo ' -r   turn on random play'
-    echo ' -s   search without playing'
+    echo ' -s   specify multiple search terms (can be repeated)'
     echo
     echo '****************************************'
     echo ' :runtime:'
@@ -244,13 +244,14 @@ usage() {
 ################################################################################
 ##  main
 ################################################################################
-while getopts :hp:rs option; do
+terms=()
+while getopts :hp:rs: option; do
     case $option in
         c) config_file=$OPTARG ;;
-        h) action=help ;;
+        h) usage; exit 0 ;;
         p) playlist_file=$OPTARG ;;
         r) random=true ;;
-        s) action=search ;;
+        s) terms+=("$OPTARG") ;;
     esac
 done
 
@@ -260,14 +261,16 @@ load_config
 find_playlist
 
 shift $((OPTIND-1))
-pattern="$@"
 
-if [[ "$action" == "help" ]]; then
-    usage
-elif [[ "$action" == "search" ]]; then
-    search
-    print_list
+## collect query items or use the remaining arguments
+if [[ "${#terms[@]}" -gt 0 ]]; then
+    pattern='('
+    for q in "${terms[@]}"; do
+        pattern+="$q)|("
+    done
+    pattern=${pattern%|(}
 else
-    play
+    pattern="$@"
 fi
 
+play
