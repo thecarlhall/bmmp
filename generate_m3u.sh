@@ -34,7 +34,6 @@ find $location -type f -iname '*.mp3' \
         -e 's,{,%7B,g' \
         -e 's,},%7D,g'  \
     | sort \
-    | uniq \
     > "$output"
 
 line_count=$(sed -n '$=' "$output")

@@ -49,13 +49,13 @@ bmmp supports playing mp3 files as noted in an m3u playlist.  The files played c
 #### Filter the playlist before playing
 
 ```bash
-./play.sh Nas
+./play.sh talib kweli
 ```
 
 ### Filter the playlist before playing randomly
 
 ```bash
-./play.sh -r Nas
+./play.sh -r grateful dead
 ```
 
 ### Searching 
@@ -63,7 +63,7 @@ bmmp supports playing mp3 files as noted in an m3u playlist.  The files played c
 #### List search results without playing
 
 ```bash
-./play.sh -s Nas
+./play.sh -s nas
 ```
 
 ### Generating playlist
@@ -78,6 +78,7 @@ bmmp supports playing mp3 files as noted in an m3u playlist.  The files played c
 
 - find
 - sed
+- sort
 
 ### Playing Playlist
 
