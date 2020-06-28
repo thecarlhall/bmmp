@@ -36,6 +36,8 @@ urldecode() {
 }
 
 load_config() {
+    QUERIES=()
+    config_file=${config_file:-~/.bmmp/config}
     [[ -f "${config_file}" ]] && source "${config_file}"
 
     KEY_LIST=${KEY_LIST:-l}
@@ -103,6 +105,28 @@ choose_next() {
         url=$(sed "${pick}q;d" "$playlist_file")
     else
         url=$(echo "$list" | sed -n ${pick}p)
+    fi
+}
+
+collect_arguments() {
+    if [[ ! -z "$query" ]]; then
+        pattern="${QUERIES[${query}]}"
+    fi
+
+    ## collect query items or use the remaining arguments
+    if [[ "${#terms[@]}" -gt 0 ]]; then
+        if [[ ! -z "$pattern" ]]; then
+            pattern+='|'
+        fi
+        pattern+='('
+        for q in "${terms[@]}"; do
+            pattern+="$q)|("
+        done
+        pattern=${pattern%|(}
+    fi
+
+    if [[ -z "$pattern" ]]; then
+        pattern="$@"
     fi
 }
 
@@ -193,7 +217,7 @@ play() {
 
 ## print the playlist
 print_list() {
-    echo "$(urldecode "$list")" | less --chop-long-lines --LINE-NUMBERS +${pick}g
+    echo "$(urldecode "$list")" | less -R --chop-long-lines --LINE-NUMBERS +${pick}g
 }
 
 ## search the playlist
@@ -244,33 +268,23 @@ usage() {
 ################################################################################
 ##  main
 ################################################################################
+
 terms=()
-while getopts :hp:rs: option; do
+while getopts :hp:q:rs: option; do
     case $option in
         c) config_file=$OPTARG ;;
         h) usage; exit 0 ;;
         p) playlist_file=$OPTARG ;;
+        q) query=$OPTARG ;;
         r) random=true ;;
         s) terms+=("$OPTARG") ;;
     esac
 done
 
-config_file=${config_file:-~/.bmmp/config}
 load_config
-
 find_playlist
 
 shift $((OPTIND-1))
 
-## collect query items or use the remaining arguments
-if [[ "${#terms[@]}" -gt 0 ]]; then
-    pattern='('
-    for q in "${terms[@]}"; do
-        pattern+="$q)|("
-    done
-    pattern=${pattern%|(}
-else
-    pattern="$@"
-fi
-
+collect_arguments
 play
