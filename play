@@ -110,7 +110,7 @@ choose_next() {
 
 collect_arguments() {
     if [[ ! -z "$query" ]]; then
-        pattern="${QUERIES[${query}]}"
+        IFS=';' read -r -a terms <<< "${QUERIES[${query}]}"
     fi
 
     ## collect query items or use the remaining arguments
@@ -123,10 +123,6 @@ collect_arguments() {
             pattern+="$q)|("
         done
         pattern=${pattern%|(}
-    fi
-
-    if [[ -z "$pattern" ]]; then
-        pattern="$@"
     fi
 }
 
@@ -281,10 +277,11 @@ while getopts :hp:q:rs: option; do
     esac
 done
 
+shift "$((OPTIND-1))"
+terms+=("$@")
+
 load_config
 find_playlist
-
-shift $((OPTIND-1))
 
 collect_arguments
 play
