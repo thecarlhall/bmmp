@@ -108,7 +108,7 @@ choose_next() {
     fi
 }
 
-collect_arguments() {
+synth_query() {
     if [[ ! -z "$query" ]]; then
         IFS=';' read -r -a terms <<< "${QUERIES[${query}]}"
     fi
@@ -265,6 +265,9 @@ usage() {
 ##  main
 ################################################################################
 
+load_config
+
+# something about this wants to live right here
 terms=()
 while getopts :hp:q:rs: option; do
     case $option in
@@ -280,8 +283,6 @@ done
 shift "$((OPTIND-1))"
 terms+=("$@")
 
-load_config
+synth_query
 find_playlist
-
-collect_arguments
 play
