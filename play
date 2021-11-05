@@ -109,10 +109,6 @@ choose_next() {
 }
 
 synth_query() {
-    if [[ ! -z "$query" ]]; then
-        IFS=';' read -r -a terms <<< "${QUERIES[${query}]}"
-    fi
-
     ## collect query items or use the remaining arguments
     if [[ "${#terms[@]}" -gt 0 ]]; then
         if [[ ! -z "$pattern" ]]; then
@@ -242,6 +238,7 @@ usage() {
     echo '****************************************'
     echo ' :arguments:'
     echo '****************************************'
+    echo ' -c   location of config file. Defaults to `~/.bmmp/config`.'
     echo ' -h   show help and usage'
     echo ' -p   location of the playlist file to use'
     echo ' -r   turn on random play'
@@ -274,9 +271,7 @@ while getopts :hp:q:rs: option; do
         c) config_file=$OPTARG ;;
         h) usage; exit 0 ;;
         p) playlist_file=$OPTARG ;;
-        q) query=$OPTARG ;;
         r) random=true ;;
-        s) terms+=("$OPTARG") ;;
     esac
 done
 
