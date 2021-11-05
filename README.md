@@ -16,7 +16,7 @@ bmmp supports playing mp3 files as noted in an m3u playlist.  The files played c
 ```
  -c   location of config file. Defaults to `~/.bmmp/config`.
  -h   show help and usage.
- -p   playlist file to use.  Defaults to `playlist.m3u`.
+ -p   playlist file to use.  Defaults to `./playlist.m3u` then `~/.bmmp/playlist.m3u`.
  -r   turn on random play
 ```
 

@@ -50,7 +50,7 @@ load_config() {
 
 ## look for the playlist in known locations
 find_playlist() {
-    local possible_playlists=( $playlist_file ~/.bmmp/playlist.m3u playlist.m3u )
+    local possible_playlists=( $playlist_file playlist.m3u ~/.bmmp/playlist.m3u )
     
     for playlist in ${possible_playlists[@]}; do
         if [[ -f $playlist ]]; then
