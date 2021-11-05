@@ -1,18 +1,28 @@
 #!/usr/bin/env bash
 set -e
 
-while getopts c:l:o:s: option; do
+while getopts fl:o:s: option; do
     case $option in
+        f) force=1 ;;
         l) location=$OPTARG ;;
         o) output=$OPTARG ;;
         s) server=$OPTARG ;;
     esac
 done
 
+if [[ -z $force ]]; then
+    if ls --full-time -tr | tail -n 1 | grep -q playlist; then
+        echo 'Playlist was generated after latest change. Use -f to ignore this check.'
+        exit 1
+    fi
+fi
+
+location=${location:-$(pwd)}
 output=${output:-playlist.m3u}
 
 if [[ -z "$location" || -z "$server" ]]; then 
     echo 'Set -l (location), -s (server)'
+    echo $location :: $server
     exit 1
 fi
 
