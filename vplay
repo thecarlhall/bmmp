@@ -1,0 +1,115 @@
+#!/usr/bin/env bash
+set -e
+
+################################################################################
+##  functions
+################################################################################
+load_config() {
+    QUERIES=()
+    config_file=${config_file:-~/.bmmp/config}
+    [[ -f "${config_file}" ]] && source "${config_file}"
+}
+
+## look for the playlist in known locations
+find_playlist() {
+    local possible_playlists=( $playlist_file ~/.bmmp/playlist.m3u playlist.m3u )
+    
+    for playlist in ${possible_playlists[@]}; do
+        if [[ -f $playlist ]]; then
+            playlist_file=$playlist
+            echo "Reading playlist from $playlist_file"
+            return
+        fi
+    done
+
+    echo "!! No playlist found"
+    exit -2
+}
+
+synth_query() {
+    if [[ ! -z "$query" ]]; then
+        IFS=';' read -r -a terms <<< "${QUERIES[${query}]}"
+    fi
+
+    ## collect query items or use the remaining arguments
+    if [[ "${#terms[@]}" -gt 0 ]]; then
+        if [[ ! -z "$pattern" ]]; then
+            pattern+='|'
+        fi
+        pattern+='('
+        for q in "${terms[@]}"; do
+            pattern+="$q)|("
+        done
+        pattern=${pattern%|(}
+    fi
+}
+
+## play songs based on a search
+play() {
+    search
+
+    options="-I ncurses"
+    if [ "$random" = true ]; then
+        options+=" --random"
+    fi
+    vlc $options $list
+}
+
+## search the playlist
+search() {
+    if [[ -z "$pattern" ]]; then
+        echo "Using entire playlist..."
+        unset list
+        list_len=$(sed -n '$=' "$playlist_file")
+    else
+        # replace space with 'any char'
+        echo "Searching for '$pattern'..."
+        local esc_pattern="${pattern//[\.]/\\.}"  # replace dots with escaped dots for explicit match
+        esc_pattern="${esc_pattern//[ ]/.+}"      # replace spaces with .+ for fuzzy matching
+        #echo "Using pattern: ${esc_pattern}"
+        list=$(grep -Ei "$esc_pattern" "$playlist_file" | sort)
+        if [[ -z "$list" ]]; then
+            echo "!! Did not find results for '${pattern}'"
+            exit -1
+        fi
+        list_len=$(echo "$list" | sed -n '$=')
+    fi
+}
+
+## print usage details
+usage() {
+    echo '****************************************'
+    echo ' :arguments:'
+    echo '****************************************'
+    echo ' -h   show help and usage'
+    echo ' -p   location of the playlist file to use'
+    echo ' -r   turn on random play'
+    echo ' -s   specify multiple search terms (can be repeated)'
+    echo '****************************************'
+}
+
+################################################################################
+##  main
+################################################################################
+
+load_config
+
+# something about this wants to live right here
+terms=()
+while getopts :hp:q:rs: option; do
+    case $option in
+        c) config_file=$OPTARG ;;
+        h) usage; exit 0 ;;
+        p) playlist_file=$OPTARG ;;
+        q) query=$OPTARG ;;
+        r) random=true ;;
+        s) terms+=("$OPTARG") ;;
+    esac
+done
+
+shift "$((OPTIND-1))"
+terms+=("$@")
+
+synth_query
+find_playlist
+play
