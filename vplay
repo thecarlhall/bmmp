@@ -57,7 +57,7 @@ play() {
     if [ "$random" = true ]; then
         options+=" --random"
     fi
-    vlc $options $list &
+    nohup vlc $options $list & &> /dev/null
 }
 
 ## search the playlist
