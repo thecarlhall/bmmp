@@ -1,5 +1,6 @@
 .bmmp.env
 playlist.m3u
+nohup.out
 
 ## ctags file
 tags
