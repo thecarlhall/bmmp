@@ -1,34 +1,39 @@
 #!/usr/bin/env bash
 set -e
 
-while getopts fl:o:s: option; do
+usage() {
+    echo 'Usage: generate_m3u.sh [-f] [-l location] [-o output] [-s server]'
+    echo ' -f   force regeneration even if playlist is up to date'
+    echo ' -h   show help and usage'
+    echo ' -l   location to scan for mp3 files'
+    echo ' -o   output file to write playlist. Defaults to /var/storage/playlists/music.m3u'
+    echo ' -s   server URL to prefix file paths'
+}
+
+while getopts fhl:o:s: option; do
     case $option in
         f) force=1 ;;
+        h) usage; exit 0 ;;
         l) location=$OPTARG ;;
         o) output=$OPTARG ;;
         s) server=$OPTARG ;;
     esac
 done
 
-if [[ -z $force ]]; then
-    if ls --full-time -tr | tail -n 1 | grep -q playlist; then
-        echo 'Playlist was generated after latest change. Use -f to ignore this check.'
-        exit 1
+location=${location:-/var/storage/music/}
+server=${server:-https://media.halls.farm/files/music/}
+output=${output:-/var/storage/playlists/music.m3u}
+
+if [[ -z $force ]] && [[ -f "$output" ]]; then
+    if [[ -z "$(find "$location" -type f -iname '*.mp3' -newer "$output" | head -1)" ]]; then
+        echo 'Playlist is up to date. Use -f to force regeneration.'
+        exit 0
     fi
 fi
 
-location=${location:-$(pwd)}
-output=${output:-playlist.m3u}
-
-if [[ -z "$location" || -z "$server" ]]; then 
-    echo 'Set -l (location), -s (server)'
-    echo $location :: $server
-    exit 1
-fi
-
-# add a line for each mp3 and replace some url characters
+# output a line for each mp3 and replace some URL characters
 # this reflects play.sh
-find $location -type f -iname '*.mp3' \
+find "$location" -type f -iname '*.mp3' \
     | sed -e "s,^$location,$server,g" \
         -e 's, ,%20,g' \
         -e 's,!,%21,g' \

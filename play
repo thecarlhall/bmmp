@@ -50,7 +50,7 @@ load_config() {
 
 ## look for the playlist in known locations
 find_playlist() {
-    local possible_playlists=( $playlist_file playlist.m3u ~/.bmmp/playlist.m3u )
+    local possible_playlists=( "$playlist_file" playlist.m3u ~/.bmmp/playlist.m3u )
     
     for playlist in ${possible_playlists[@]}; do
         if [[ -f $playlist ]]; then
@@ -68,7 +68,7 @@ find_playlist() {
 choose_next() {
     first=1
 
-    if [[ ! -z "$user_pick" ]]; then
+    if [[ -n "$user_pick" ]]; then
         if [[ ${user_pick:0:1} == "-" || ${user_pick:0:1} == "+" ]]; then
             pick=$(($pick $user_pick))
         else
@@ -90,7 +90,7 @@ choose_next() {
 
     elif [ "$random" = true ]; then
         ## pick a random track from the list
-        if hash jot;  then
+        if hash jot; then
             pick=$(jot -r 1 $first $list_len)
         elif hash shuf; then
             pick=$(shuf -n 1 -i $first-$list_len)
@@ -183,7 +183,7 @@ play() {
                 [1-9+-])
                     read -p "Choose track [playing $pick of $list_len]: " -e -i "$cmd" user_pick
 
-                    if [[ ! -z "$user_pick" ]]; then
+                    if [[ -n "$user_pick" ]]; then
                         kill_it
                         break
                     fi
@@ -262,16 +262,25 @@ usage() {
 ##  main
 ################################################################################
 
-load_config
-
-# something about this wants to live right here
-terms=()
-while getopts :hp:q:rs: option; do
+# pre-scan for -c so load_config picks up the right file
+while getopts :c: option; do
     case $option in
         c) config_file=$OPTARG ;;
+    esac
+done
+OPTIND=1
+
+load_config
+
+terms=()
+while getopts :chp:q:rs: option; do
+    case $option in
+        c) ;;  # already handled above
         h) usage; exit 0 ;;
         p) playlist_file=$OPTARG ;;
+        q) query=$OPTARG ;;
         r) random=true ;;
+        s) terms+=("$OPTARG") ;;
     esac
 done
 

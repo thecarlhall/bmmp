@@ -17,7 +17,7 @@ load_config() {
 
 ## look for the playlist in known locations
 find_playlist() {
-    local possible_playlists=( $playlist_file playlist.m3u ~/.bmmp/playlist.m3u )
+    local possible_playlists=( "$playlist_file" playlist.m3u ~/.bmmp/playlist.m3u )
     
     for playlist in ${possible_playlists[@]}; do
         if [[ -f $playlist ]]; then
@@ -57,7 +57,7 @@ play() {
     if [ "$random" = true ]; then
         options+=" --random"
     fi
-    nohup vlc $options $list & &> /dev/null
+    nohup vlc $options $list &>/dev/null &
 }
 
 ## search the playlist
@@ -97,13 +97,20 @@ usage() {
 ##  main
 ################################################################################
 
-load_config
-
-# something about this wants to live right here
-terms=()
-while getopts :hp:q:rs: option; do
+# pre-scan for -c so load_config picks up the right file
+while getopts :c: option; do
     case $option in
         c) config_file=$OPTARG ;;
+    esac
+done
+OPTIND=1
+
+load_config
+
+terms=()
+while getopts :chp:q:rs: option; do
+    case $option in
+        c) ;;  # already handled above
         h) usage; exit 0 ;;
         p) playlist_file=$OPTARG ;;
         q) query=$OPTARG ;;
